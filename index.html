@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WFIP — WINNEX Freight Intelligence Platform</title>
+<style>
+:root{--red:#9B1030;--red2:#7A0C24;--red3:#C41840;--gold:#C8A96A;--gold2:#A8894A;--bg:#F4F6F9;--card:#fff;--border:#E2E8F0;--txt:#1E293B;--muted:#64748B;--light:#94A3B8;--ok:#10B981;--warn:#F59E0B;--err:#EF4444;--inf:#3B82F6;--r:12px;--sh:0 1px 3px rgba(0,0,0,.08),0 4px 12px rgba(0,0,0,.05);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;font-size:14px;}
+/* HEADER */
+#hdr{background:linear-gradient(135deg,var(--red2),var(--red));padding:0 32px;display:flex;align-items:center;gap:20px;height:64px;box-shadow:0 2px 12px rgba(0,0,0,.2);}
+#logo-area{display:flex;align-items:center;gap:12px;}
+#logo-box{width:44px;height:44px;background:var(--gold);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--red2);font-size:13px;letter-spacing:-1px;flex-shrink:0;}
+#logo-txt h1{color:#fff;font-size:20px;font-weight:800;letter-spacing:.5px;}
+#logo-txt p{color:var(--gold);font-size:9px;letter-spacing:2.5px;font-weight:600;}
+#hdr-kpis{display:flex;gap:6px;margin-left:auto;}
+.hkpi{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:4px 12px;text-align:center;}
+.hkpi-l{font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.5px;font-weight:700;}
+.hkpi-v{font-size:13px;font-weight:800;color:#fff;}
+.hkpi-v.pos{color:#6EE7B7;}
+/* NAV */
+#nav{background:var(--card);border-bottom:1px solid var(--border);padding:0 32px;display:flex;gap:2px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;position:sticky;top:0;z-index:50;}
+#nav::-webkit-scrollbar{display:none;}
+.ntab{padding:12px 16px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;transition:all .15s;user-select:none;-webkit-tap-highlight-color:transparent;}
+.ntab:hover{color:var(--red);}
+.ntab.on{color:var(--red);border-bottom-color:var(--red);}
+/* CONTENT */
+#content{max-width:1400px;margin:0 auto;padding:28px 32px;}
+.pg{display:none;}
+.pg.on{display:block;}
+/* CARDS */
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);border:1px solid var(--border);}
+.ch{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.ct{font-size:14px;font-weight:700;}
+.cs{font-size:11px;color:var(--muted);margin-top:1px;}
+.cb{padding:20px;}
+/* GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px;}
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;}
+.gap{margin-top:20px;}
+/* FORM */
+.fg{display:flex;flex-direction:column;gap:5px;}
+.fl{font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);}
+.fi{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:16px;color:var(--txt);background:var(--card);width:100%;font-family:inherit;transition:border-color .15s;-webkit-appearance:none;}
+@media(min-width:701px){.fi{font-size:13px;}}
+.fi:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(155,16,48,.1);}
+select.fi{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2'%3E%3Cpolyline points='6,9 12,15 18,9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;}
+.fi.num{text-align:right;font-family:'Courier New',monospace;font-weight:600;}
+/* KPI CARDS */
+.kpi{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);border:1px solid var(--border);padding:20px;position:relative;overflow:hidden;}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.kpi.red::before{background:var(--red);}
+.kpi.gold::before{background:var(--gold);}
+.kpi.grn::before{background:var(--ok);}
+.kpi.blu::before{background:var(--inf);}
+.kpi.org::before{background:var(--warn);}
+.kl{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.kv{font-size:22px;font-weight:800;color:var(--txt);line-height:1.1;}
+.kv.big{font-size:28px;}
+.kv.pos{color:var(--ok);}
+.kv.neg{color:var(--err);}
+.ks{font-size:11px;color:var(--muted);margin-top:4px;}
+/* SUPPLIER CARDS */
+.scard{border-radius:var(--r);border:2px solid var(--border);background:var(--card);box-shadow:var(--sh);overflow:hidden;transition:border-color .2s,box-shadow .2s;}
+.scard.win{border-color:var(--ok);box-shadow:0 0 0 4px rgba(16,185,129,.12),var(--sh);}
+.scard.s2{border-color:var(--warn);}
+.scard.s3{border-color:var(--err);}
+.shd{padding:12px 16px;display:flex;align-items:center;gap:10px;}
+.shd.win{background:linear-gradient(135deg,#ECFDF5,#D1FAE5);}
+.shd.s2{background:linear-gradient(135deg,#FFFBEB,#FEF3C7);}
+.shd.s3{background:linear-gradient(135deg,#FEF2F2,#FEE2E2);}
+.srk{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;}
+.r1{background:var(--ok);color:#fff;}
+.r2{background:var(--warn);color:#fff;}
+.r3{background:var(--err);color:#fff;}
+.sni{flex:1;font-size:15px;font-weight:700;border:1.5px dashed rgba(255,255,255,.5);background:rgba(255,255,255,.15);color:var(--txt);font-family:inherit;border-radius:6px;padding:4px 8px;min-width:0;}
+.sni:focus{outline:none;border-color:var(--gold);background:rgba(255,255,255,.9);}
+.sni::placeholder{color:rgba(100,116,139,.6);font-weight:400;}
+.cur-sel{border:1.5px solid var(--border);border-radius:5px;font-size:10px;font-weight:700;color:var(--muted);background:var(--bg);padding:3px 4px;cursor:pointer;width:42px;}
+.sbody{padding:16px;}
+.crow{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);}
+.crow:last-child{border-bottom:none;}
+.clbl{font-size:12px;color:var(--muted);flex:1;}
+.cin{width:110px;padding:7px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:14px;font-weight:600;text-align:right;font-family:'Courier New',monospace;-webkit-appearance:none;}
+.cin:focus{outline:none;border-color:var(--red);}
+@media(min-width:701px){.cin{font-size:12px;padding:5px 8px;}}
+.ccur{font-size:10px;color:var(--light);width:28px;}
+.stotal{margin-top:12px;background:var(--bg);border-radius:8px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;}
+.stl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);}
+.stv{font-size:20px;font-weight:800;}
+.scard.win .stv{color:var(--ok);}
+/* TOGGLE */
+.tgrp{display:flex;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;}
+.tbtn{flex:1;padding:7px 8px;background:none;border:none;cursor:pointer;font-size:11px;font-weight:700;color:var(--muted);transition:all .15s;font-family:inherit;}
+.tbtn.on{background:var(--red);color:#fff;}
+/* WINNER BANNER */
+.wbanner{background:linear-gradient(135deg,#ECFDF5,#D1FAE5);border:1px solid #A7F3D0;border-radius:var(--r);padding:16px 20px;display:flex;align-items:center;gap:16px;margin-bottom:20px;}
+.wbico{font-size:32px;}
+.wbtit{font-size:16px;font-weight:800;color:#065F46;}
+.wbsub{font-size:12px;color:#047857;margin-top:2px;}
+.wbsav{margin-left:auto;text-align:right;}
+.wbsv{font-size:20px;font-weight:800;color:var(--ok);}
+.wbsl{font-size:11px;color:#047857;}
+/* COMPARISON TABLE */
+.ctbl{width:100%;border-collapse:collapse;}
+.ctbl th{text-align:left;padding:10px 12px;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);background:var(--bg);border-bottom:2px solid var(--border);}
+.ctbl td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px;}
+.ctbl tr:hover td{background:#FAFBFC;}
+.ctbl .best{color:var(--ok);font-weight:700;}
+.ctbl .worst{color:var(--err);}
+/* BADGES */
+.bdg{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;}
+.bg{background:#ECFDF5;color:#059669;}
+.by{background:#FFFBEB;color:#D97706;}
+.br{background:#FEF2F2;color:#DC2626;}
+.bb{background:#EFF6FF;color:#2563EB;}
+.bgold{background:#FEF9E7;color:#8B6914;}
+/* REVENUE CARDS */
+.rcard{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);border:1px solid var(--border);padding:20px;}
+.rcico{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:12px;}
+.rc-red{background:rgba(155,16,48,.1);}
+.rc-gold{background:rgba(200,169,106,.2);}
+.rc-grn{background:rgba(16,185,129,.1);}
+.rc-blu{background:rgba(59,130,246,.1);}
+.rcn{font-size:14px;font-weight:700;margin-bottom:4px;}
+.rcv{font-size:26px;font-weight:800;color:var(--txt);margin-top:8px;}
+/* SLIDER */
+.slrow{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+.slrow:last-child{border-bottom:none;}
+.sllbl{font-size:13px;font-weight:500;min-width:200px;}
+input[type=range]{flex:1;-webkit-appearance:none;height:4px;border-radius:2px;background:var(--border);outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--red);cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,.2);}
+.slval{min-width:80px;text-align:right;font-weight:700;font-size:14px;}
+/* P&L */
+.pnl{background:var(--bg);border-radius:var(--r);padding:20px;}
+.prow{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);}
+.prow:last-child{border-bottom:none;font-weight:800;font-size:16px;}
+.ptot{padding-top:12px;border-top:2px solid var(--border);margin-top:4px;}
+/* BILLING */
+.bcard{background:var(--card);border-radius:var(--r);border:2px solid var(--border);overflow:hidden;}
+.bcard.rec{border-color:var(--gold);box-shadow:0 0 0 4px rgba(200,169,106,.15);}
+.bhd{padding:14px 18px;background:var(--bg);border-bottom:1px solid var(--border);}
+.bsc{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);}
+.bnm{font-size:15px;font-weight:800;margin-top:3px;}
+.bbody{padding:18px;}
+.brow{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);}
+.brow:last-child{border-bottom:none;}
+.brl{font-size:12px;color:var(--muted);}
+.brv{font-size:13px;font-weight:700;}
+/* PROJECTION TABLE */
+.ptbl{width:100%;border-collapse:collapse;}
+.ptbl th{text-align:left;padding:11px 14px;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);background:var(--bg);border-bottom:2px solid var(--border);}
+.ptbl td{padding:11px 14px;border-bottom:1px solid var(--border);font-size:13px;}
+.ptbl tr:hover td{background:#FAFBFC;}
+.pcnt{font-size:20px;font-weight:800;color:var(--red);}
+/* REPORT */
+.rsec{margin-bottom:28px;}
+.rst{font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--red);margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid var(--red);}
+.rrow{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);}
+.rrl{font-size:13px;color:var(--muted);}
+.rrv{font-size:13px;font-weight:700;}
+.rrv.hi{font-size:16px;color:var(--ok);}
+.airec{background:linear-gradient(135deg,var(--red2),var(--red));color:#fff;border-radius:var(--r);padding:24px;margin-top:24px;}
+.airl{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
+.airt{font-size:14px;line-height:1.75;color:rgba(255,255,255,.9);}
+/* TOTAL STRIP */
+.tstrip{background:linear-gradient(135deg,var(--red),var(--red3));color:#fff;border-radius:var(--r);padding:20px 24px;margin-top:20px;}
+.ts-lbl{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:4px;}
+.ts-val{font-size:22px;font-weight:800;color:#fff;}
+.ts-sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:2px;}
+/* BTN */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:all .15s;font-family:inherit;}
+.btn-red{background:var(--red);color:#fff;}
+.btn-red:hover{background:var(--red3);}
+.btn-gold{background:var(--gold);color:var(--red2);}
+.btn-gold:hover{opacity:.9;}
+.btn-outline{background:transparent;color:var(--txt);border:1.5px solid var(--border);}
+.btn-outline:hover{background:var(--bg);}
+/* MISC */
+hr.div{height:1px;background:var(--border);border:none;margin:20px 0;}
+.sec-title{font-size:18px;font-weight:800;margin-bottom:4px;}
+.sec-sub{font-size:13px;color:var(--muted);margin-bottom:20px;}
+.info-bar{background:linear-gradient(135deg,var(--red2),var(--red));border-radius:var(--r);padding:16px 24px;color:#fff;display:flex;flex-wrap:wrap;gap:24px;margin-bottom:24px;}
+.ib-f{min-width:120px;}
+.ib-l{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:3px;}
+.ib-v{font-size:14px;font-weight:700;}
+.ib-sep{width:1px;background:rgba(255,255,255,.15);align-self:stretch;}
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+/* ── TABLET ── */
+@media(max-width:1024px){
+  #content{padding:20px 20px;}
+  .g4{grid-template-columns:1fr 1fr;}
+  .g5{grid-template-columns:1fr 1fr;}
+  .price-scenarios{grid-template-columns:1fr 1fr;}
+  .hkpi:nth-child(n+4){display:none;}
+}
+/* ── MOBILE ── */
+@media(max-width:700px){
+  #hdr{padding:0 16px;height:56px;gap:12px;}
+  #logo-box{width:36px;height:36px;font-size:11px;}
+  #logo-txt h1{font-size:16px;}
+  #logo-txt p{display:none;}
+  #hdr-kpis{display:none;}
+  #nav{padding:0 8px;}
+  .ntab{padding:10px 10px;font-size:11px;}
+  #content{padding:16px 12px;}
+  .sec-title{font-size:15px;}
+  .g2,.g3,.g4,.g5{grid-template-columns:1fr;}
+  .price-scenarios{grid-template-columns:1fr 1fr;}
+  .g2.form-cols{grid-template-columns:1fr;}
+  .form-grid-4,.form-grid-3,.form-grid-2{grid-template-columns:1fr 1fr;}
+  .info-bar{gap:12px;padding:12px 14px;flex-wrap:wrap;}
+  .ib-sep{display:none;}
+  .ib-f{min-width:calc(50% - 6px);}
+  .kv{font-size:18px;}
+  .kv.big{font-size:22px;}
+  .kpi{padding:14px;}
+  .tstrip .g4{grid-template-columns:1fr 1fr;}
+  .card .cb{padding:14px;}
+  /* Supplier cards stack */
+  #scards{grid-template-columns:1fr;}
+  .scard .sbody{padding:12px;}
+  .crow{gap:6px;}
+  .cin{width:100px;}
+  .stv{font-size:17px;}
+  /* Tables: horizontal scroll */
+  .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .ctbl,.ptbl,.scenario-table{min-width:560px;}
+  .ctbl th,.ctbl td,.ptbl th,.ptbl td{padding:8px 10px;font-size:12px;}
+  /* Billing cards */
+  .bcard .bbody{padding:14px;}
+  /* Winner banner */
+  .wbanner{flex-wrap:wrap;gap:10px;}
+  .wbsav{margin-left:0;}
+  /* Revenue cards */
+  .rcard{padding:14px;}
+  .rcv{font-size:20px;}
+  /* Simulation */
+  .slrow{flex-wrap:wrap;gap:6px;}
+  .sllbl{min-width:100%;font-size:12px;}
+  .slval{min-width:auto;}
+  /* P&L */
+  .pnl{padding:14px;}
+  .prow{font-size:13px;}
+  /* Report */
+  .airec{padding:16px;}
+  .airt{font-size:13px;}
+  .rrow{flex-wrap:wrap;gap:4px;}
+  .rrv{font-size:12px;}
+  /* Buttons */
+  .btn{padding:8px 14px;font-size:12px;}
+  /* Form fix */
+  .g2 .card,.g2 .kpi,.g2 .bcard{min-width:0;}
+  /* Tstrip on mobile */
+  .tstrip .g4{grid-template-columns:1fr 1fr;gap:12px;}
+  /* fix form grids inside cards on mobile */
+  .cb .g4,.cb .g2,.cb .g3{grid-template-columns:1fr 1fr;}
+  .cb .g4 .fg:last-child{grid-column:1/-1;}
+}
+@media(max-width:420px){
+  .price-scenarios{grid-template-columns:1fr;}
+  .form-grid-4,.form-grid-3,.form-grid-2,.cb .g4,.cb .g2,.cb .g3{grid-template-columns:1fr;}
+  .tstrip .g4{grid-template-columns:1fr;}
+  .ib-f{min-width:100%;}
+  .ntab{padding:10px 8px;font-size:10px;}
+}
+.price-scenarios{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px;}
+.psc{background:var(--card);border:2px solid var(--border);border-radius:var(--r);padding:16px;text-align:center;cursor:pointer;transition:all .2s;}
+.psc:hover{transform:translateY(-2px);box-shadow:var(--sh);}
+.psc.sel{border-color:var(--red);background:linear-gradient(135deg,#FEF2F2,#FFF5F7);}
+.psc-l{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.psc-v{font-size:22px;font-weight:800;}
+.psc.sel .psc-v{color:var(--red);}
+.psc-m{font-size:11px;color:var(--muted);margin-top:4px;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="hdr">
+  <div id="logo-area">
+    <div id="logo-box">W</div>
+    <div id="logo-txt">
+      <h1>WINNEX</h1>
+      <p>LOGISTICS · THINK BEYOND</p>
+    </div>
+  </div>
+  <div id="hdr-kpis">
+    <div class="hkpi"><div class="hkpi-l">Custo</div><div class="hkpi-v" id="hk-custo">R$ —</div></div>
+    <div class="hkpi"><div class="hkpi-l">Preço Venda</div><div class="hkpi-v" id="hk-preco">R$ —</div></div>
+    <div class="hkpi"><div class="hkpi-l">Lucro Líq.</div><div class="hkpi-v pos" id="hk-lucro">R$ —</div></div>
+    <div class="hkpi"><div class="hkpi-l">Margem</div><div class="hkpi-v pos" id="hk-margem">—%</div></div>
+    <div class="hkpi"><div class="hkpi-l">ROI</div><div class="hkpi-v pos" id="hk-roi">—%</div></div>
+  </div>
+</div>
+
+<!-- NAV -->
+<div id="nav">
+  <div class="ntab on" onclick="goTab('t-info')">📋 Cotação</div>
+  <div class="ntab" onclick="goTab('t-comp')">🏆 Comparador</div>
+  <div class="ntab" onclick="goTab('t-rec')">💰 Receitas</div>
+  <div class="ntab" onclick="goTab('t-price')">💲 Precificação</div>
+  <div class="ntab" onclick="goTab('t-sim')">📊 Simulação</div>
+  <div class="ntab" onclick="goTab('t-fat')">🧾 Faturamento</div>
+  <div class="ntab" onclick="goTab('t-dash')">📈 Dashboard</div>
+  <div class="ntab" onclick="goTab('t-proj')">🔭 Projeções</div>
+  <div class="ntab" onclick="goTab('t-rep')">📄 Parecer</div>
+</div>
+
+<div id="content">
+
+<!-- TAB: INFO GERAL -->
+<div class="pg on" id="t-info">
+  <div class="sec-title">Dados da Cotação</div>
+  <div class="sec-sub">Preencha as informações gerais do embarque. Todos os campos são editáveis.</div>
+  <div class="card">
+    <div class="ch"><span class="ct">📋 Informações Gerais</span></div>
+    <div class="cb">
+      <div class="g4" style="gap:16px;">
+        <div class="fg"><label class="fl">Cliente</label><input class="fi" id="i-cliente" placeholder="Ex: NAPRO Farmacêutica" oninput="sync()"></div>
+        <div class="fg"><label class="fl">Projeto</label><input class="fi" id="i-projeto" placeholder="Ex: KIT132" oninput="sync()"></div>
+        <div class="fg"><label class="fl">Referência</label><input class="fi" id="i-ref" placeholder="Ex: REF-2024-001" oninput="sync()"></div>
+        <div class="fg"><label class="fl">Nº Cotação</label><input class="fi" id="i-cot" placeholder="Ex: WX-2024-055" oninput="sync()"></div>
+        <div class="fg"><label class="fl">Data</label><input class="fi" type="date" id="i-data" oninput="sync()"></div>
+        <div class="fg"><label class="fl">Comercial</label><input class="fi" id="i-com" placeholder="Nome do responsável" oninput="sync()"></div>
+        <div class="fg"><label class="fl">Modal</label>
+          <select class="fi" id="i-modal" onchange="sync()">
+            <option>Marítimo FCL</option><option>Marítimo LCL</option><option>Aéreo</option><option>Rodoviário</option><option>Sea-Air</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">Incoterm</label>
+          <select class="fi" id="i-inco" onchange="sync()">
+            <option>FOB</option><option>CIF</option><option>EXW</option><option>CFR</option><option>DAP</option><option>DDP</option><option>FCA</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">Origem</label><input class="fi" id="i-orig" placeholder="Ex: Shanghai, China" oninput="sync()"></div>
+        <div class="fg"><label class="fl">Destino</label><input class="fi" id="i-dest" placeholder="Ex: Itajaí, SC" oninput="sync()"></div>
+        <div class="fg"><label class="fl">Moeda</label>
+          <select class="fi" id="i-moeda" onchange="calc()">
+            <option>USD</option><option>EUR</option><option>CNY</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">Taxa Cambial (R$)</label><input class="fi num" id="i-taxa" type="number" step="0.01" value="5.70" oninput="calc()"></div>
+      </div>
+      <div class="gap"></div>
+      <div class="fg"><label class="fl">Observações</label><textarea class="fi" id="i-obs" rows="3" placeholder="Observações gerais da cotação..." oninput="sync()"></textarea></div>
+    </div>
+  </div>
+  <div style="margin-top:16px;display:flex;justify-content:flex-end;">
+    <button class="btn btn-red" onclick="goTab('t-comp')">Próximo: Comparar Fornecedores →</button>
+  </div>
+</div>
+
+<!-- TAB: COMPARADOR -->
+<div class="pg" id="t-comp">
+  <div class="sec-title">Comparador de Fornecedores</div>
+  <div class="sec-sub">Preencha os dados dos 3 fornecedores. O sistema identifica automaticamente o vencedor.</div>
+
+  <div id="winner-banner" style="display:none;" class="wbanner">
+    <div class="wbico">🏆</div>
+    <div>
+      <div class="wbtit" id="wb-nome">—</div>
+      <div class="wbsub">Fornecedor vencedor selecionado para todos os cálculos</div>
+    </div>
+    <div class="wbsav">
+      <div class="wbsv" id="wb-eco">R$ 0,00</div>
+      <div class="wbsl">economia vs. 2º lugar</div>
+    </div>
+  </div>
+
+  <div class="g3" id="scards">
+    <!-- Supplier 1 -->
+    <div class="scard" id="sc0">
+      <div class="shd" id="shd0">
+        <div class="srk" id="srk0">1</div>
+        <input class="sni" id="sn0" value="Vanguard" placeholder="Nome do Fornecedor" oninput="calc()">
+        <span class="bdg bb" id="sbdg0"></span>
+      </div>
+      <div class="sbody">
+        <div class="crow"><span class="clbl">Frete Internacional (USD)</span><input class="cin" id="sf0-0" type="number" value="220" oninput="calc()"><span class="ccur">USD</span></div>
+        <div class="crow"><span class="clbl">Taxas Origem</span><input class="cin" id="sf0-1" type="number" value="0" oninput="calc()"><select class="cur-sel" id="sc0-1-cur" onchange="calc()"><option>R$</option><option>USD</option></select></div>
+        <div class="crow"><span class="clbl">Taxas Destino</span><input class="cin" id="sf0-2" type="number" value="64" oninput="calc()"><span class="ccur">R$</span></div>
+        <div class="crow"><span class="clbl">Taxas Locais</span><input class="cin" id="sf0-3" type="number" value="0" oninput="calc()"><span class="ccur">R$</span></div>
+        <div class="crow"><span class="clbl">Armazenagem</span><input class="cin" id="sf0-4" type="number" value="11565.90" oninput="calc()"><span class="ccur">R$</span></div>
+        <div class="crow"><span class="clbl">Outras Despesas</span><input class="cin" id="sf0-5" type="number" value="0" oninput="calc()"><span class="ccur">R$</span></div>
+        <div class="crow"><span class="clbl">Transit Time</span><input class="cin" id="sf0-6" type="number" value="36" oninput="calc()"><span class="ccur">dias</span></div>
+        <div class="crow"><span class="clbl">Free Time</span><input class="cin" id="sf0-7" type="number" value="7" oninput="calc()"><span class="ccur">dias</span></div>
+        <div class="stotal"><span class="stl">Total BRL</span><span class="stv" id="st0">R$ 0,00</span></div>
+      </div>
+    </div>
+    <!-- Supplier 2 -->
+    <div class="scard" id="sc1">
+      <div class="shd" id="shd1">
+        <div class="srk" id="srk1">2</div>
+        <input class="sni" id="sn1" value="SEA-AIR" placeholder="Nome do Fornecedor" oninput="calc()">
+        <span class="bdg bb" id="sbdg1"></span>
+      </div>
+      <div class="sbody">
+        <div class="crow"><span class="clbl">Frete Internacional (USD)</span><input class="cin" id="sf1-0" type="number" value="37.13" oninput="calc()"><span class="ccur">USD</span></div>
+        <div class="crow"><span class="clbl">Taxas Origem</span><input class="cin" id="sf1-1" type="number" value="0" oninput="calc()"><select class="cur-sel" id="sc1-1-cur" onchange="calc()"><option>R$</option><option>USD</option></select></div>
+        <div class="crow"><span class="clbl">Taxas Destino</span><input class="cin" id="sf1-2" type="number" value="62.60" oninput="calc()"><span class="ccur">R$</span></div>
+        <div class="crow"><span class="clbl">Taxas Locais</span><input class="cin" id="sf1-3" type="number" value="32.60" oninput="calc()"><span class="ccur">R$</span></div>
+        <div class="crow"><span class="clbl">Armazenagem</span><input class="cin" id="sf1-4" type="number" value="6207.38" oninput="calc()"><span class="ccur">R$</span></div>
+        <div class="crow"><span class="clbl">Outras Despesas</span><input class="cin" id="sf1-5" type="number" value="0" oninput="calc()"><span class="ccur">R$</span></div>
+        <div class="crow"><span class="clbl">Transit Time</span><input class="cin" id="sf1-6" type="number" value="36" oninput="calc()"><span class="ccur">dias</span></div>
+        <div class="crow"><span class="clbl">Free Time</span><input class="cin" id="sf1-7" type="number" value="7" oninput="calc()"><span class="ccur">dias</span></div>
+        <div class="stotal"><span class="stl">Total BRL</span><span class="stv" id="st1">R$ 0,00</span></div>
+      </div>
+    </div>
+    <!-- Supplier 3 -->
+    <div class="scard" id="sc2">
+      <div class="shd" id="shd2">
+        <div class="srk" id="srk2">3</div>
+        <input class="sni" id="sn2" value="ALLINK" placeholder="Nome do Fornecedor" oninput="calc()">
+        <span class="bdg bb" id="sbdg2"></span>
+      </div>
+      <div class="sbody">
+        <div class="crow"><span class="clbl">Frete Internacional (USD)</span><input class="cin" id="sf2-0" type="number" value="381.05" oninput="calc()"><span class="ccur">USD</span></div>
+        <div class="crow"><span class="clbl">Taxas Origem</span><input class="cin" id="sf2-1" type="number" value="0" oninput="calc()"><select class="cur-sel" id="sc2-1-cur" onchange="calc()"><option>R$</option><option>USD</option></select></div>
+        <div class="crow"><span class="clbl">Taxas Destino</span><input class="cin" id="sf2-2" type="number" value="85.20" oninput="calc()"><span class="ccur">R$</span></div>
+        <div class="crow"><span class="clbl">Taxas Locais</span><input class="cin" id="sf2-3" type="number" value="0" oninput="calc()"><span class="ccur">R$</span></div>
+        <div class="crow"><span class="clbl">Armazenagem</span><input class="cin" id="sf2-4" type="number" value="6854.59" oninput="calc()"><span class="ccur">R$</span></div>
+        <div class="crow"><span class="clbl">Outras Despesas</span><input class="cin" id="sf2-5" type="number" value="0" oninput="calc()"><span class="ccur">R$</span></div>
+        <div class="crow"><span class="clbl">Transit Time</span><input class="cin" id="sf2-6" type="number" value="44" oninput="calc()"><span class="ccur">dias</span></div>
+        <div class="crow"><span class="clbl">Free Time</span><input class="cin" id="sf2-7" type="number" value="7" oninput="calc()"><span class="ccur">dias</span></div>
+        <div class="stotal"><span class="stl">Total BRL</span><span class="stv" id="st2">R$ 0,00</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparison Table -->
+  <div class="card gap">
+    <div class="ch"><span class="ct">📊 Análise Comparativa</span></div>
+    <div class="cb">
+      <div class="tbl-wrap">
+      <table class="ctbl">
+        <thead><tr>
+          <th>Fornecedor</th><th>Custo Total</th><th>Transit Time</th><th>Free Time</th>
+          <th>Diferença vs. Melhor</th><th>Diferença %</th><th>Ranking</th>
+        </tr></thead>
+        <tbody id="cmp-tbl"></tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB: RECEITAS -->
+<div class="pg" id="t-rec">
+  <div class="sec-title">Receitas da WINNEX</div>
+  <div class="sec-sub">Configure todas as receitas. Os cálculos são atualizados instantaneamente.</div>
+
+  <div id="rec-info-bar" class="info-bar">
+    <div class="ib-f"><div class="ib-l">Fornecedor Vencedor</div><div class="ib-v" id="rib-forn">—</div></div>
+    <div class="ib-sep"></div>
+    <div class="ib-f"><div class="ib-l">Custo do Fornecedor</div><div class="ib-v" id="rib-custo">R$ —</div></div>
+    <div class="ib-sep"></div>
+    <div class="ib-f"><div class="ib-l">Armazenagem</div><div class="ib-v" id="rib-arm">R$ —</div></div>
+    <div class="ib-sep"></div>
+    <div class="ib-f"><div class="ib-l">Taxa Cambial</div><div class="ib-v" id="rib-taxa">R$ 5,70</div></div>
+  </div>
+
+  <div class="g4">
+    <!-- Profit -->
+    <div class="rcard">
+      <div class="rcico rc-red">💹</div>
+      <div class="rcn">Profit Comercial</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">Margem sobre o custo do fornecedor</div>
+      <div class="tgrp" style="margin-bottom:12px;">
+        <button class="tbtn on" id="pt-v" onclick="setTipo('profit','valor')">R$</button>
+        <button class="tbtn" id="pt-u" onclick="setTipo('profit','usd')">USD</button>
+        <button class="tbtn" id="pt-p" onclick="setTipo('profit','pct')">%</button>
+      </div>
+      <div class="fg"><label class="fl" id="pl-lbl">Valor (R$)</label>
+        <input class="fi num" id="r-profit" type="number" value="1098.11" oninput="calc()">
+      </div>
+      <div class="rcv" id="rv-profit">R$ 0,00</div>
+    </div>
+    <!-- Comissão -->
+    <div class="rcard">
+      <div class="rcico rc-gold">🤝</div>
+      <div class="rcn">Comissão</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">Comissão sobre a operação</div>
+      <div class="tgrp" style="margin-bottom:12px;">
+        <button class="tbtn" id="ct-v" onclick="setTipo('com','valor')">R$</button>
+        <button class="tbtn" id="ct-u" onclick="setTipo('com','usd')">USD</button>
+        <button class="tbtn on" id="ct-p" onclick="setTipo('com','pct')">%</button>
+      </div>
+      <div class="fg"><label class="fl" id="cl-lbl">Percentual (%)</label>
+        <input class="fi num" id="r-com" type="number" value="20" oninput="calc()">
+      </div>
+      <div class="rcv" id="rv-com">R$ 0,00</div>
+    </div>
+    <!-- Rebate -->
+    <div class="rcard">
+      <div class="rcico rc-grn">🔄</div>
+      <div class="rcn">Rebate</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">Rebate recebido do agente/carrier</div>
+      <div class="tgrp" style="margin-bottom:12px;">
+        <button class="tbtn on" id="rt-v" onclick="setTipo('rebate','valor')">R$ Valor</button>
+        <button class="tbtn" id="rt-p" onclick="setTipo('rebate','pct')">% Percentual</button>
+      </div>
+      <div class="fg"><label class="fl" id="rl-lbl">Valor (R$)</label>
+        <input class="fi num" id="r-rebate" type="number" value="0" oninput="calc()">
+      </div>
+      <div class="rcv" id="rv-rebate">R$ 0,00</div>
+    </div>
+    <!-- Repasse Armazenagem -->
+    <div class="rcard">
+      <div class="rcico rc-blu">🏭</div>
+      <div class="rcn">Repasse de Armazenagem</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">% do valor de armazenagem repassado</div>
+      <div class="fg" style="margin-bottom:12px;"><label class="fl">Percentual de Repasse (%)</label>
+        <select class="fi" id="r-rep-pct" onchange="calc()">
+          <option value="10">10%</option><option value="15">15%</option>
+          <option value="20">20%</option><option value="25" selected>25%</option>
+          <option value="30">30%</option><option value="35">35%</option>
+          <option value="40">40%</option><option value="50">50%</option>
+          <option value="custom">Outro...</option>
+        </select>
+      </div>
+      <div class="fg" id="rep-custom-wrap" style="display:none;margin-bottom:8px;"><label class="fl">Percentual Customizado</label>
+        <input class="fi num" id="r-rep-custom" type="number" value="25" oninput="calc()">
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">
+        <span id="arm-calc-txt">R$ 0,00 × 25% =</span>
+      </div>
+      <div class="rcv" id="rv-rep">R$ 0,00</div>
+    </div>
+  </div>
+
+  <!-- Total Receitas -->
+  <div class="tstrip gap">
+    <div class="g4">
+      <div><div class="ts-lbl">Total Receitas WINNEX</div><div class="ts-val" id="ts-total">R$ 0,00</div></div>
+      <div><div class="ts-lbl">Lucro Bruto</div><div class="ts-val" id="ts-bruto">R$ 0,00</div></div>
+      <div><div class="ts-lbl">Impostos Estimados (8,65%)</div><div class="ts-val" id="ts-imp">R$ 0,00</div><div class="ts-sub"><input type="number" step="0.1" id="r-imp" value="8.65" style="width:60px;background:rgba(255,255,255,.2);border:none;color:#fff;font-weight:700;font-size:12px;border-radius:4px;padding:2px 4px;" oninput="calc()"> %</div></div>
+      <div><div class="ts-lbl">Lucro Líquido</div><div class="ts-val" id="ts-liq">R$ 0,00</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB: PRECIFICAÇÃO -->
+<div class="pg" id="t-price">
+  <div class="sec-title">Precificação Inteligente</div>
+  <div class="sec-sub">Cenários de preço calculados automaticamente com base no fornecedor vencedor.</div>
+
+  <div class="price-scenarios" id="price-scenarios">
+    <div class="psc sel" id="psc-min" onclick="selScenario('min')"><div class="psc-l">Preço Mínimo</div><div class="psc-v" id="ps-min">R$ 0</div><div class="psc-m">Margem 5%</div></div>
+    <div class="psc" id="psc-agr" onclick="selScenario('agr')"><div class="psc-l">Preço Agressivo</div><div class="psc-v" id="ps-agr">R$ 0</div><div class="psc-m">Margem 10%</div></div>
+    <div class="psc" id="psc-ide" onclick="selScenario('ide')"><div class="psc-l">Preço Ideal</div><div class="psc-v" id="ps-ide">R$ 0</div><div class="psc-m" id="psc-ide-m">Margem 20%</div></div>
+    <div class="psc" id="psc-pre" onclick="selScenario('pre')"><div class="psc-l">Preço Premium</div><div class="psc-v" id="ps-pre">R$ 0</div><div class="psc-m">Margem 30%</div></div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="ch"><span class="ct">⚙️ Parâmetros de Precificação</span></div>
+      <div class="cb">
+        <div class="g2">
+          <div class="fg"><label class="fl">Margem Desejada (%)</label><input class="fi num" id="p-margem" type="number" value="20" oninput="calcPrice()"></div>
+          <div class="fg"><label class="fl">Impostos sobre NF (%)</label><input class="fi num" id="p-imp" type="number" value="8.65" oninput="calcPrice()"></div>
+          <div class="fg"><label class="fl">Preço de Venda (R$)</label><input class="fi num" id="p-preco" type="number" value="0" oninput="calcFromPrice()"></div>
+          <div class="fg"><label class="fl">Markup (%)</label><input class="fi num" id="p-markup" type="number" value="0" oninput="calcFromMarkup()"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><span class="ct">📊 Resultado</span></div>
+      <div class="cb">
+        <div class="pnl">
+          <div class="prow"><span>Custo do Fornecedor</span><span id="pp-custo" class="font-bold">R$ 0,00</span></div>
+          <div class="prow"><span>Profit Comercial</span><span id="pp-profit" class="font-bold">R$ 0,00</span></div>
+          <div class="prow"><span>Comissão</span><span id="pp-com" class="font-bold">R$ 0,00</span></div>
+          <div class="prow"><span>Rebate</span><span id="pp-rebate" class="font-bold">R$ 0,00</span></div>
+          <div class="prow"><span>Repasse Armazenagem</span><span id="pp-rep" class="font-bold">R$ 0,00</span></div>
+          <hr style="border:none;border-top:1px dashed var(--border);margin:4px 0;">
+          <div class="prow"><span>Preço de Venda</span><span id="pp-preco" style="font-size:16px;font-weight:800;color:var(--inf)">R$ 0,00</span></div>
+          <div class="prow"><span>Lucro Bruto</span><span id="pp-bruto" class="font-bold">R$ 0,00</span></div>
+          <div class="prow"><span>Impostos</span><span id="pp-imp" style="color:var(--err)" class="font-bold">- R$ 0,00</span></div>
+          <div class="prow ptot"><span>Lucro Líquido</span><span id="pp-liq" style="color:var(--ok)">R$ 0,00</span></div>
+          <div class="prow"><span>Margem</span><span id="pp-marg" style="color:var(--ok)" class="font-bold">0%</span></div>
+          <div class="prow"><span>Markup</span><span id="pp-mkup" style="color:var(--inf)" class="font-bold">0%</span></div>
+          <div class="prow"><span>ROI</span><span id="pp-roi" style="color:var(--gold2)" class="font-bold">0%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB: SIMULAÇÃO -->
+<div class="pg" id="t-sim">
+  <div class="sec-title">Simulação de Profit</div>
+  <div class="sec-sub">Ajuste os sliders para simular diferentes cenários em tempo real.</div>
+  <div class="g2">
+    <div class="card">
+      <div class="ch"><span class="ct">🎛️ Variáveis da Simulação</span></div>
+      <div class="cb">
+        <div class="slrow"><span class="sllbl">Profit Comercial (R$)</span><input type="range" id="sl-profit" min="0" max="10000" step="50" value="1098" oninput="simCalc()"><span class="slval" id="slv-profit">R$ 1.098</span></div>
+        <div class="slrow"><span class="sllbl">Comissão (%)</span><input type="range" id="sl-com" min="0" max="50" step="0.5" value="20" oninput="simCalc()"><span class="slval" id="slv-com">20%</span></div>
+        <div class="slrow"><span class="sllbl">Rebate (R$)</span><input type="range" id="sl-rebate" min="0" max="5000" step="50" value="0" oninput="simCalc()"><span class="slval" id="slv-rebate">R$ 0</span></div>
+        <div class="slrow"><span class="sllbl">Repasse Armazenagem (%)</span><input type="range" id="sl-rep" min="0" max="100" step="5" value="25" oninput="simCalc()"><span class="slval" id="slv-rep">25%</span></div>
+        <div class="slrow"><span class="sllbl">Impostos (%)</span><input type="range" id="sl-imp" min="0" max="30" step="0.5" value="8.65" oninput="simCalc()"><span class="slval" id="slv-imp">8.65%</span></div>
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+          <div class="fg"><label class="fl">Markup Desejado (%)</label><input class="fi num" id="sl-markup" type="number" value="0" oninput="simFromMarkup()"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><span class="ct">📊 P&L em Tempo Real</span></div>
+      <div class="cb">
+        <div class="pnl">
+          <div class="prow"><span>Custo Fornecedor</span><span id="sim-custo" class="font-bold">R$ 0,00</span></div>
+          <div class="prow"><span>Profit Comercial</span><span id="sim-profit" class="font-bold">R$ 0,00</span></div>
+          <div class="prow"><span>Comissão</span><span id="sim-com" class="font-bold">R$ 0,00</span></div>
+          <div class="prow"><span>Rebate</span><span id="sim-rebate" class="font-bold">R$ 0,00</span></div>
+          <div class="prow"><span>Repasse Armazenagem</span><span id="sim-rep" class="font-bold">R$ 0,00</span></div>
+          <hr style="border:none;border-top:1px dashed var(--border);margin:4px 0;">
+          <div class="prow"><span>Lucro Bruto</span><span id="sim-bruto" class="font-bold">R$ 0,00</span></div>
+          <div class="prow"><span>Impostos</span><span id="sim-imp" style="color:var(--err)" class="font-bold">R$ 0,00</span></div>
+          <div class="prow ptot"><span>Lucro Líquido</span><span id="sim-liq" style="color:var(--ok);font-size:20px;">R$ 0,00</span></div>
+        </div>
+        <div class="g2" style="margin-top:16px;">
+          <div class="kpi grn"><div class="kl">Margem</div><div class="kv" id="sim-marg">0%</div></div>
+          <div class="kpi blu"><div class="kl">ROI</div><div class="kv" id="sim-roi">0%</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB: FATURAMENTO -->
+<div class="pg" id="t-fat">
+  <div class="sec-title">Modelos de Faturamento</div>
+  <div class="sec-sub">Comparação automática dos dois cenários de faturamento. O melhor é destacado automaticamente.</div>
+
+  <div id="fat-rec-banner" style="display:none;margin-bottom:20px;background:linear-gradient(135deg,#FEF9E7,#FEF3C7);border:1px solid var(--gold);border-radius:var(--r);padding:16px 20px;display:flex;align-items:center;gap:12px;">
+    <span style="font-size:24px;">⭐</span>
+    <div><div style="font-size:15px;font-weight:800;color:var(--gold2)" id="fat-rec-nome">—</div><div style="font-size:12px;color:var(--gold2);margin-top:2px;">Cenário recomendado pela análise</div></div>
+  </div>
+
+  <div class="g2">
+    <div class="bcard" id="bc0">
+      <div class="bhd"><div class="bsc">Cenário A</div><div class="bnm">🏢 Fornecedor → Cliente (Comissão)</div></div>
+      <div class="bbody">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">WINNEX atua como agente. Emite NF apenas da comissão/profit. Sem risco de crédito.</div>
+        <div class="brow"><span class="brl">Receita WINNEX</span><span class="brv" id="fa-rec">R$ 0,00</span></div>
+        <div class="brow"><span class="brl">Impostos (sobre NF)</span><span class="brv" style="color:var(--err)" id="fa-imp">R$ 0,00</span></div>
+        <div class="brow"><span class="brl">Lucro Líquido</span><span class="brv" style="color:var(--ok)" id="fa-liq">R$ 0,00</span></div>
+        <div class="brow"><span class="brl">Margem</span><span class="brv" id="fa-marg">0%</span></div>
+        <div class="brow"><span class="brl">Capital Necessário</span><span class="brv" id="fa-cap">R$ 0,00</span></div>
+        <div class="brow"><span class="brl">Fluxo de Caixa</span><span class="brv" id="fa-fc">—</span></div>
+        <div class="brow"><span class="brl">Risco Financeiro</span><span class="brv" id="fa-risk"><span class="bdg bg">Baixo</span></span></div>
+        <div class="brow"><span class="brl">Tributação</span><span class="brv" id="fa-trib">ISS / PIS / COFINS</span></div>
+        <div class="brow"><span class="brl">ROI</span><span class="brv" id="fa-roi">0%</span></div>
+        <div class="brow"><span class="brl">Escalabilidade</span><span class="brv"><span class="bdg bb">Alta</span></span></div>
+      </div>
+    </div>
+    <div class="bcard" id="bc1">
+      <div class="bhd"><div class="bsc">Cenário B</div><div class="bnm">🔄 Fornecedor → WINNEX → Cliente</div></div>
+      <div class="bbody">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">WINNEX fatura o cliente pelo valor total. Maior receita mas exige capital de giro.</div>
+        <div class="brow"><span class="brl">Receita WINNEX</span><span class="brv" id="fb-rec">R$ 0,00</span></div>
+        <div class="brow"><span class="brl">Impostos (sobre NF total)</span><span class="brv" style="color:var(--err)" id="fb-imp">R$ 0,00</span></div>
+        <div class="brow"><span class="brl">Lucro Líquido</span><span class="brv" style="color:var(--ok)" id="fb-liq">R$ 0,00</span></div>
+        <div class="brow"><span class="brl">Margem</span><span class="brv" id="fb-marg">0%</span></div>
+        <div class="brow"><span class="brl">Capital Necessário</span><span class="brv" id="fb-cap">R$ 0,00</span></div>
+        <div class="brow"><span class="brl">Fluxo de Caixa</span><span class="brv" id="fb-fc">—</span></div>
+        <div class="brow"><span class="brl">Risco Financeiro</span><span class="brv"><span class="bdg by">Médio</span></span></div>
+        <div class="brow"><span class="brl">Tributação</span><span class="brv">ISS / PIS / COFINS / IRPJ / CSLL</span></div>
+        <div class="brow"><span class="brl">ROI</span><span class="brv" id="fb-roi">0%</span></div>
+        <div class="brow"><span class="brl">Escalabilidade</span><span class="brv"><span class="bdg bg">Alta</span></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB: DASHBOARD -->
+<div class="pg" id="t-dash">
+  <div class="sec-title">Dashboard Executivo</div>
+  <div class="sec-sub">Visão consolidada em tempo real da operação.</div>
+
+  <div id="dash-info-bar" class="info-bar">
+    <div class="ib-f"><div class="ib-l">Cliente</div><div class="ib-v" id="d-cli">—</div></div>
+    <div class="ib-sep"></div>
+    <div class="ib-f"><div class="ib-l">Projeto</div><div class="ib-v" id="d-proj">—</div></div>
+    <div class="ib-sep"></div>
+    <div class="ib-f"><div class="ib-l">Modal</div><div class="ib-v" id="d-modal">—</div></div>
+    <div class="ib-sep"></div>
+    <div class="ib-f"><div class="ib-l">Incoterm</div><div class="ib-v" id="d-inco">—</div></div>
+    <div class="ib-sep"></div>
+    <div class="ib-f"><div class="ib-l">Fornecedor Vencedor</div><div class="ib-v" id="d-forn">—</div></div>
+    <div class="ib-sep"></div>
+    <div class="ib-f"><div class="ib-l">Cenário Recomendado</div><div class="ib-v" id="d-cen">—</div></div>
+  </div>
+
+  <div class="g4">
+    <div class="kpi red"><div class="kl">Custo Fornecedor</div><div class="kv" id="d-custo">R$ 0</div></div>
+    <div class="kpi gold"><div class="kl">Preço de Venda</div><div class="kv" id="d-preco">R$ 0</div></div>
+    <div class="kpi grn"><div class="kl">Lucro Líquido</div><div class="kv pos" id="d-liq">R$ 0</div></div>
+    <div class="kpi blu"><div class="kl">Economia Obtida</div><div class="kv pos" id="d-eco">R$ 0</div></div>
+  </div>
+
+  <div class="g4 gap">
+    <div class="kpi"><div class="kl">Profit Comercial</div><div class="kv small" id="d-profit">R$ 0</div></div>
+    <div class="kpi"><div class="kl">Comissão</div><div class="kv small" id="d-com">R$ 0</div></div>
+    <div class="kpi"><div class="kl">Rebate</div><div class="kv small" id="d-rebate">R$ 0</div></div>
+    <div class="kpi gold"><div class="kl">Repasse Armazenagem</div><div class="kv small" id="d-rep">R$ 0</div><div class="ks" id="d-rep-pct">0% sobre armazenagem</div></div>
+  </div>
+
+  <div class="g5 gap">
+    <div class="kpi grn"><div class="kl">Margem</div><div class="kv big pos" id="d-marg">0%</div></div>
+    <div class="kpi blu"><div class="kl">Markup</div><div class="kv big" id="d-mkup">0%</div></div>
+    <div class="kpi org"><div class="kl">ROI</div><div class="kv big" id="d-roi">0%</div></div>
+    <div class="kpi"><div class="kl">Capital de Giro</div><div class="kv" id="d-cap">R$ 0</div></div>
+    <div class="kpi"><div class="kl">Lucro Bruto</div><div class="kv" id="d-bruto">R$ 0</div></div>
+  </div>
+
+  <div class="g2 gap">
+    <div class="kpi"><div class="kl">Receita Anual Projetada (×12)</div><div class="kv pos" id="d-rec-anual">R$ 0</div><div class="ks">Baseado em 1 embarque/mês</div></div>
+    <div class="kpi grn"><div class="kl">Lucro Anual Projetado (×12)</div><div class="kv pos" id="d-luc-anual">R$ 0</div><div class="ks">Baseado em 1 embarque/mês</div></div>
+  </div>
+</div>
+
+<!-- TAB: PROJEÇÕES -->
+<div class="pg" id="t-proj">
+  <div class="sec-title">Projeções de Crescimento</div>
+  <div class="sec-sub">Escalabilidade da operação baseada no embarque atual.</div>
+  <div class="card">
+    <div class="ch"><span class="ct">🔭 Simulação por Volume de Embarques</span></div>
+    <div class="cb">
+      <div class="tbl-wrap">
+      <table class="ptbl" id="proj-tbl">
+        <thead><tr>
+          <th>Embarques</th><th>Receita Total</th><th>Lucro Líquido</th><th>Margem</th><th>Capital Necessário</th><th>ROI Acumulado</th>
+        </tr></thead>
+        <tbody id="proj-body"></tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB: PARECER -->
+<div class="pg" id="t-rep">
+  <div class="sec-title">Parecer Executivo</div>
+  <div class="sec-sub">Relatório gerado automaticamente com base em todos os dados preenchidos.</div>
+  <div style="display:flex;gap:10px;margin-bottom:20px;">
+    <button class="btn btn-red" onclick="window.print()">🖨️ Imprimir Parecer</button>
+    <button class="btn btn-outline" onclick="exportReport()">📄 Exportar Texto</button>
+  </div>
+  <div class="card" id="report-area">
+    <div class="cb">
+      <div style="display:flex;align-items:center;gap:16px;padding-bottom:20px;border-bottom:2px solid var(--red);margin-bottom:24px;">
+        <div style="width:50px;height:50px;background:var(--red);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--gold);font-size:16px;">W</div>
+        <div><div style="font-size:20px;font-weight:800;">WINNEX LOGISTICS</div><div style="font-size:11px;color:var(--muted);letter-spacing:2px;">PARECER EXECUTIVO DE OPERAÇÃO</div></div>
+        <div style="margin-left:auto;text-align:right;"><div style="font-size:12px;color:var(--muted)" id="rep-data">—</div><div style="font-size:12px;font-weight:700;" id="rep-cot">—</div></div>
+      </div>
+      <div id="report-content">
+        <div class="rsec">
+          <div class="rst">01 · Dados da Operação</div>
+          <div class="rrow"><span class="rrl">Cliente</span><span class="rrv" id="r-cli">—</span></div>
+          <div class="rrow"><span class="rrl">Projeto</span><span class="rrv" id="r-proj">—</span></div>
+          <div class="rrow"><span class="rrl">Modal</span><span class="rrv" id="r-modal">—</span></div>
+          <div class="rrow"><span class="rrl">Rota</span><span class="rrv" id="r-rota">—</span></div>
+          <div class="rrow"><span class="rrl">Incoterm</span><span class="rrv" id="r-inco">—</span></div>
+        </div>
+        <div class="rsec">
+          <div class="rst">02 · Fornecedor Recomendado</div>
+          <div class="rrow"><span class="rrl">Fornecedor</span><span class="rrv hi" id="r-forn">—</span></div>
+          <div class="rrow"><span class="rrl">Custo Total</span><span class="rrv" id="r-custo">—</span></div>
+          <div class="rrow"><span class="rrl">Transit Time</span><span class="rrv" id="r-tt">—</span></div>
+          <div class="rrow"><span class="rrl">Economia vs. Concorrência</span><span class="rrv" style="color:var(--ok)" id="r-eco">—</span></div>
+        </div>
+        <div class="rsec">
+          <div class="rst">03 · Estrutura Financeira Recomendada</div>
+          <div class="rrow"><span class="rrl">Preço de Venda Ideal</span><span class="rrv hi" id="r-preco">—</span></div>
+          <div class="rrow"><span class="rrl">Profit Comercial</span><span class="rrv" id="r-profit">—</span></div>
+          <div class="rrow"><span class="rrl">Comissão</span><span class="rrv" id="r-com">—</span></div>
+          <div class="rrow"><span class="rrl">Rebate</span><span class="rrv" id="r-rebate2">—</span></div>
+          <div class="rrow"><span class="rrl">Repasse de Armazenagem</span><span class="rrv" id="r-rep">—</span></div>
+          <div class="rrow"><span class="rrl">Markup Recomendado</span><span class="rrv" id="r-mkup">—</span></div>
+        </div>
+        <div class="rsec">
+          <div class="rst">04 · Resultado Esperado</div>
+          <div class="rrow"><span class="rrl">Lucro Bruto</span><span class="rrv" id="r-bruto">—</span></div>
+          <div class="rrow"><span class="rrl">Impostos Estimados</span><span class="rrv" id="r-imp">—</span></div>
+          <div class="rrow"><span class="rrl">Lucro Líquido</span><span class="rrv hi" id="r-liq">—</span></div>
+          <div class="rrow"><span class="rrl">Margem Final</span><span class="rrv hi" id="r-marg">—</span></div>
+          <div class="rrow"><span class="rrl">ROI</span><span class="rrv hi" id="r-roi">—</span></div>
+        </div>
+        <div class="rsec">
+          <div class="rst">05 · Modelo de Faturamento</div>
+          <div class="rrow"><span class="rrl">Cenário Recomendado</span><span class="rrv hi" id="r-cen">—</span></div>
+          <div class="rrow"><span class="rrl">Justificativa</span><span class="rrv" id="r-cen-just">—</span></div>
+        </div>
+        <div class="rsec">
+          <div class="rst">06 · Principais Riscos</div>
+          <div id="r-risks" style="font-size:13px;color:var(--muted);line-height:1.7;">—</div>
+        </div>
+        <div class="airec">
+          <div class="airl">⚡ Recomendação Final — Inteligência WFIP</div>
+          <div class="airt" id="r-final">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end content -->
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+const tipos = {profit:'valor', com:'pct', rebate:'valor'};
+let selScen = 'ide';
+let winnerIdx = 0;
+
+function getV(id){return parseFloat(document.getElementById(id)?.value)||0;}
+function getS(id){return document.getElementById(id)?.value||'';}
+function setEl(id,v){const e=document.getElementById(id);if(e)e.innerHTML=v;}
+function setVal(id,v){const e=document.getElementById(id);if(e)e.value=v;}
+
+const fmt = n => 'R$ '+n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtN = n => n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const pct = n => n.toFixed(2).replace('.',',')+'%';
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function goTab(id){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  const tabs=['t-info','t-comp','t-rec','t-price','t-sim','t-fat','t-dash','t-proj','t-rep'];
+  const idx=tabs.indexOf(id);
+  const activeTab=document.querySelectorAll('.ntab')[idx];
+  activeTab.classList.add('on');
+  activeTab.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(id==='t-dash')renderDash();
+  if(id==='t-rep')renderReport();
+  if(id==='t-proj')renderProj();
+  if(id==='t-fat')renderFat();
+}
+
+// ============================================================
+// SYNC info fields
+// ============================================================
+function sync(){calc();}
+
+// ============================================================
+// SUPPLIER CALCULATIONS
+// ============================================================
+function calcSupplier(i){
+  const taxa = getV('i-taxa')||5.70;
+  const frete = getV(`sf${i}-0`) * taxa;
+  const origCur = document.getElementById(`sc${i}-1-cur`)?.value === 'USD';
+  const orig = getV(`sf${i}-1`) * (origCur ? taxa : 1);
+  const dest = getV(`sf${i}-2`);
+  const loc  = getV(`sf${i}-3`);
+  const arm  = getV(`sf${i}-4`);
+  const out  = getV(`sf${i}-5`);
+  return frete+orig+dest+loc+arm+out;
+}
+
+function calcAllSuppliers(){
+  const tots=[0,1,2].map(i=>calcSupplier(i));
+  const sorted=[...tots].map((t,i)=>({t,i})).sort((a,b)=>a.t-b.t);
+  winnerIdx=sorted[0].i;
+  // Update totals display
+  for(let i=0;i<3;i++){
+    setEl(`st${i}`,fmt(tots[i]));
+  }
+  // Ranking
+  const ranks=[0,0,0];
+  sorted.forEach((s,r)=>ranks[s.i]=r+1);
+  // Style cards
+  for(let i=0;i<3;i++){
+    const sc=document.getElementById(`sc${i}`);
+    const shd=document.getElementById(`shd${i}`);
+    const srk=document.getElementById(`srk${i}`);
+    sc.classList.remove('win','s2','s3');
+    shd.classList.remove('win','s2','s3');
+    srk.classList.remove('r1','r2','r3');
+    const cls=['win','s2','s3'][ranks[i]-1];
+    const rcls=['r1','r2','r3'][ranks[i]-1];
+    sc.classList.add(cls);
+    shd.classList.add(cls);
+    srk.classList.add(rcls);
+    srk.textContent=ranks[i];
+    const bdg=document.getElementById(`sbdg${i}`);
+    if(ranks[i]===1){bdg.textContent='🏆 Vencedor';bdg.className='bdg bg';}
+    else if(ranks[i]===2){bdg.textContent='2º lugar';bdg.className='bdg by';}
+    else{bdg.textContent='3º lugar';bdg.className='bdg br';}
+  }
+  // Winner banner
+  const winnerName=getS(`sn${winnerIdx}`)||'Fornecedor '+(winnerIdx+1);
+  const secondTot=sorted[1].t;
+  const eco=secondTot-sorted[0].t;
+  const wb=document.getElementById('winner-banner');
+  wb.style.display='flex';
+  setEl('wb-nome',winnerName);
+  setEl('wb-eco',fmt(eco));
+  // Comparison table
+  renderCmpTable(tots,sorted,ranks);
+  return {tots,sorted,winnerIdx,winnerName,eco};
+}
+
+function renderCmpTable(tots,sorted,ranks){
+  let rows='';
+  const min=sorted[0].t;
+  for(let i=0;i<3;i++){
+    const name=getS(`sn${i}`)||'Fornecedor '+(i+1);
+    const tt=getV(`sf${i}-6`)||'—';
+    const ft=getV(`sf${i}-7`)||'—';
+    const diff=tots[i]-min;
+    const pctDiff=min>0?(diff/min*100):0;
+    const cls=ranks[i]===1?'best':ranks[i]===3?'worst':'';
+    const rkBdg=['<span class="bdg bg">🥇 1º</span>','<span class="bdg by">🥈 2º</span>','<span class="bdg br">🥉 3º</span>'][ranks[i]-1];
+    rows+=`<tr>
+      <td class="${cls}"><strong>${name}</strong></td>
+      <td class="${cls}">${fmt(tots[i])}</td>
+      <td>${tt} dias</td><td>${ft} dias</td>
+      <td>${diff>0?fmt(diff):'<span class="bdg bg">Melhor</span>'}</td>
+      <td>${pctDiff>0?'+'+pctDiff.toFixed(1)+'%':'—'}</td>
+      <td>${rkBdg}</td>
+    </tr>`;
+  }
+  setEl('cmp-tbl',rows);
+}
+
+// ============================================================
+// REVENUE CALCULATIONS
+// ============================================================
+function getRepassePct(){
+  const sel=document.getElementById('r-rep-pct')?.value;
+  if(sel==='custom') return getV('r-rep-custom');
+  return parseFloat(sel)||25;
+}
+
+function calcRevenues(custo,armazenagem){
+  const imp=getV('r-imp')||8.65;
+  const taxa=getV('i-taxa')||5.70;
+  let profit=0,com=0,rebate=0;
+  if(tipos.profit==='valor') profit=getV('r-profit');
+  else if(tipos.profit==='usd') profit=getV('r-profit')*taxa;
+  else profit=custo*getV('r-profit')/100;
+  if(tipos.com==='valor') com=getV('r-com');
+  else if(tipos.com==='usd') com=getV('r-com')*taxa;
+  else com=custo*getV('r-com')/100;
+  if(tipos.rebate==='valor') rebate=getV('r-rebate');
+  else rebate=custo*getV('r-rebate')/100;
+  const repPct=getRepassePct();
+  const rep=armazenagem*repPct/100;
+  const totalRec=profit+com+rebate+rep;
+  const bruto=totalRec;
+  const impostos=bruto*imp/100;
+  const liq=bruto-impostos;
+  const preco=custo+totalRec;
+  const margem=preco>0?liq/preco*100:0;
+  const markup=custo>0?liq/custo*100:0;
+  const roi=custo>0?liq/custo*100:0;
+  return {profit,com,rebate,rep,repPct,totalRec,bruto,impostos,liq,preco,margem,markup,roi,imp};
+}
+
+// ============================================================
+// MAIN CALC
+// ============================================================
+function calc(){
+  const {tots,sorted,winnerIdx:wi,winnerName,eco}=calcAllSuppliers();
+  const taxa=getV('i-taxa')||5.70;
+  const custo=tots[wi];
+  const arm=getV(`sf${wi}-4`);
+  const rv=calcRevenues(custo,arm);
+
+  // Update revenues tab
+  const forn=getS(`sn${wi}`)||'Fornecedor '+(wi+1);
+  setEl('rib-forn',forn);
+  setEl('rib-custo',fmt(custo));
+  setEl('rib-arm',fmt(arm));
+  setEl('rib-taxa','R$ '+taxa.toFixed(2));
+  setEl('rv-profit',fmt(rv.profit));
+  setEl('rv-com',fmt(rv.com));
+  setEl('rv-rebate',fmt(rv.rebate));
+  setEl('rv-rep',fmt(rv.rep));
+  setEl('arm-calc-txt',`${fmt(arm)} × ${rv.repPct}% =`);
+  setEl('ts-total',fmt(rv.totalRec));
+  setEl('ts-bruto',fmt(rv.bruto));
+  setEl('ts-imp',fmt(rv.impostos));
+  setEl('ts-liq',fmt(rv.liq));
+
+  // Header KPIs
+  setEl('hk-custo',fmt(custo));
+  setEl('hk-preco',fmt(rv.preco));
+  setEl('hk-lucro',fmt(rv.liq));
+  setEl('hk-margem',pct(rv.margem));
+  setEl('hk-roi',pct(rv.roi));
+
+  // Price tab
+  calcPrice();
+  simCalc();
+}
+
+// ============================================================
+// PRICING
+// ============================================================
+const scenMargins={min:5,agr:10,ide:20,pre:30};
+
+function selScenario(s){
+  selScen=s;
+  ['min','agr','ide','pre'].forEach(k=>{
+    document.getElementById(`psc-${k}`)?.classList.toggle('sel',k===s);
+  });
+  setVal('p-margem',scenMargins[s]);
+  calcPrice();
+}
+
+function calcPrice(){
+  const wi=winnerIdx;
+  const taxa=getV('i-taxa')||5.70;
+  const tots=[0,1,2].map(i=>calcSupplier(i));
+  const custo=tots[wi];
+  const arm=getV(`sf${wi}-4`);
+  const rv=calcRevenues(custo,arm);
+  const margem=getV('p-margem')||20;
+  const imp=getV('p-imp')||8.65;
+  const precoIdeal=margem>0?custo/(1-margem/100):custo;
+  setVal('p-preco',precoIdeal.toFixed(2));
+  const markup=custo>0?(precoIdeal-custo)/custo*100:0;
+  setVal('p-markup',markup.toFixed(2));
+  // scenarios
+  const c=custo;
+  setEl('ps-min',fmt(c/(1-0.05)));
+  setEl('ps-agr',fmt(c/(1-0.10)));
+  setEl('ps-ide',fmt(c/(1-margem/100)));
+  setEl('psc-ide-m','Margem '+margem+'%');
+  setEl('ps-pre',fmt(c/(1-0.30)));
+  // P&L
+  const lucBruto=precoIdeal-custo;
+  const impostos=lucBruto>0?lucBruto*imp/100:0;
+  const liq=lucBruto-impostos;
+  const marg=precoIdeal>0?liq/precoIdeal*100:0;
+  const mkup=custo>0?(precoIdeal-custo)/custo*100:0;
+  const roi=custo>0?liq/custo*100:0;
+  setEl('pp-custo',fmt(custo));
+  setEl('pp-profit',fmt(rv.profit));
+  setEl('pp-com',fmt(rv.com));
+  setEl('pp-rebate',fmt(rv.rebate));
+  setEl('pp-rep',fmt(rv.rep));
+  setEl('pp-preco',fmt(precoIdeal));
+  setEl('pp-bruto',fmt(lucBruto));
+  setEl('pp-imp',`- ${fmt(impostos)}`);
+  setEl('pp-liq',fmt(liq));
+  setEl('pp-marg',pct(marg));
+  setEl('pp-mkup',pct(mkup));
+  setEl('pp-roi',pct(roi));
+}
+
+function calcFromPrice(){
+  const preco=getV('p-preco');
+  const taxa=getV('i-taxa')||5.70;
+  const custo=calcSupplier(winnerIdx);
+  if(preco>0&&custo>0){
+    const m=(1-custo/preco)*100;
+    setVal('p-margem',m.toFixed(2));
+    const mk=(preco-custo)/custo*100;
+    setVal('p-markup',mk.toFixed(2));
+  }
+  calcPrice();
+}
+
+function calcFromMarkup(){
+  const mk=getV('p-markup');
+  const custo=calcSupplier(winnerIdx);
+  if(mk>0&&custo>0){
+    const preco=custo*(1+mk/100);
+    setVal('p-preco',preco.toFixed(2));
+    const m=(1-custo/preco)*100;
+    setVal('p-margem',m.toFixed(2));
+  }
+  calcPrice();
+}
+
+// ============================================================
+// SIMULATION
+// ============================================================
+function simCalc(){
+  const wi=winnerIdx;
+  const custo=calcSupplier(wi);
+  const arm=getV(`sf${wi}-4`);
+  const profit=getV('sl-profit');
+  const comPct=getV('sl-com');
+  const rebate=getV('sl-rebate');
+  const repPct=getV('sl-rep');
+  const imp=getV('sl-imp');
+  setEl('slv-profit','R$ '+profit.toLocaleString('pt-BR'));
+  setEl('slv-com',comPct+'%');
+  setEl('slv-rebate','R$ '+rebate.toLocaleString('pt-BR'));
+  setEl('slv-rep',repPct+'%');
+  setEl('slv-imp',imp+'%');
+  const com=custo*comPct/100;
+  const rep=arm*repPct/100;
+  const bruto=profit+com+rebate+rep;
+  const impostos=bruto*imp/100;
+  const liq=bruto-impostos;
+  const preco=custo+profit+com;
+  const marg=preco>0?liq/preco*100:0;
+  const roi=custo>0?liq/custo*100:0;
+  setEl('sim-custo',fmt(custo));
+  setEl('sim-profit',fmt(profit));
+  setEl('sim-com',fmt(com));
+  setEl('sim-rebate',fmt(rebate));
+  setEl('sim-rep',fmt(rep));
+  setEl('sim-bruto',fmt(bruto));
+  setEl('sim-imp',fmt(impostos));
+  setEl('sim-liq',fmt(liq));
+  setEl('sim-marg',pct(marg));
+  setEl('sim-roi',pct(roi));
+}
+
+function simFromMarkup(){
+  const mk=getV('sl-markup');
+  const custo=calcSupplier(winnerIdx);
+  if(mk>0&&custo>0){
+    const profit=custo*mk/100;
+    document.getElementById('sl-profit').value=Math.min(profit,10000);
+    simCalc();
+  }
+}
+
+// ============================================================
+// BILLING MODELS
+// ============================================================
+function renderFat(){
+  const wi=winnerIdx;
+  const custo=calcSupplier(wi);
+  const arm=getV(`sf${wi}-4`);
+  const rv=calcRevenues(custo,arm);
+  const imp=rv.imp;
+
+  // Scenario A: only commission NF
+  const aRec=rv.profit+rv.com+rv.rebate+rv.rep;
+  const aImp=aRec*imp/100;
+  const aLiq=aRec-aImp;
+  const aPreco=custo+aRec;
+  const aMarg=aPreco>0?aLiq/aPreco*100:0;
+  const aRoi=aRec>0?aLiq/aRec*100:0;
+
+  // Scenario B: full invoice
+  const bRec=custo+aRec;
+  const bImp=bRec*(imp+2)/100; // higher tax on full NF
+  const bLiq=aRec-bImp;
+  const bMarg=bRec>0?bLiq/bRec*100:0;
+  const bRoi=custo>0?bLiq/custo*100:0;
+
+  setEl('fa-rec',fmt(aRec));setEl('fa-imp',fmt(aImp));setEl('fa-liq',fmt(aLiq));
+  setEl('fa-marg',pct(aMarg));setEl('fa-cap','R$ 0 (sem risco)');
+  setEl('fa-fc','Positivo imediato');setEl('fa-roi',pct(aRoi));
+
+  setEl('fb-rec',fmt(bRec));setEl('fb-imp',fmt(bImp));setEl('fb-liq',fmt(bLiq));
+  setEl('fb-marg',pct(bMarg));setEl('fb-cap',fmt(custo));
+  setEl('fb-fc','Exige capital de giro');setEl('fb-roi',pct(bRoi));
+
+  const recBanner=document.getElementById('fat-rec-banner');
+  recBanner.style.display='flex';
+  const recName=aLiq>=bLiq?'Cenário A — Fornecedor → Cliente (Comissão)':'Cenário B — Fornecedor → WINNEX → Cliente';
+  setEl('fat-rec-nome',recName);
+
+  const bc0=document.getElementById('bc0');
+  const bc1=document.getElementById('bc1');
+  bc0.classList.toggle('rec',aLiq>=bLiq);
+  bc1.classList.toggle('rec',bLiq>aLiq);
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function renderDash(){
+  const wi=winnerIdx;
+  const tots=[0,1,2].map(i=>calcSupplier(i));
+  const sorted=[...tots].map((t,i)=>({t,i})).sort((a,b)=>a.t-b.t);
+  const custo=tots[wi];
+  const arm=getV(`sf${wi}-4`);
+  const rv=calcRevenues(custo,arm);
+  const eco=sorted[1].t-sorted[0].t;
+  const forn=getS(`sn${wi}`)||'Fornecedor '+(wi+1);
+
+  setEl('d-cli',getS('i-cliente')||'—');
+  setEl('d-proj',getS('i-projeto')||'—');
+  setEl('d-modal',getS('i-modal')||'—');
+  setEl('d-inco',getS('i-inco')||'—');
+  setEl('d-forn',forn);
+
+  const aRec=rv.totalRec;
+  const aImp=aRec*rv.imp/100;
+  const aLiq=aRec-aImp;
+  const bRec=custo+aRec;
+  const bImp=bRec*(rv.imp+2)/100;
+  const bLiq=aRec-bImp;
+  setEl('d-cen',aLiq>=bLiq?'Cenário A':'Cenário B');
+
+  setEl('d-custo',fmt(custo));
+  setEl('d-preco',fmt(rv.preco));
+  setEl('d-liq',fmt(rv.liq));
+  setEl('d-eco',fmt(eco));
+  setEl('d-profit',fmt(rv.profit));
+  setEl('d-com',fmt(rv.com));
+  setEl('d-rebate',fmt(rv.rebate));
+  setEl('d-rep',fmt(rv.rep));
+  setEl('d-rep-pct',rv.repPct+'% sobre armazenagem de '+fmt(arm));
+  setEl('d-marg',pct(rv.margem));
+  setEl('d-mkup',pct(rv.markup));
+  setEl('d-roi',pct(rv.roi));
+  setEl('d-cap',aLiq>=bLiq?'R$ 0 (Cenário A)':fmt(custo));
+  setEl('d-bruto',fmt(rv.bruto));
+  setEl('d-rec-anual',fmt(rv.totalRec*12));
+  setEl('d-luc-anual',fmt(rv.liq*12));
+}
+
+// ============================================================
+// PROJECTIONS
+// ============================================================
+function renderProj(){
+  const wi=winnerIdx;
+  const custo=calcSupplier(wi);
+  const arm=getV(`sf${wi}-4`);
+  const rv=calcRevenues(custo,arm);
+  const vols=[1,5,10,20,50,100];
+  let rows='';
+  vols.forEach(v=>{
+    const rec=rv.totalRec*v;
+    const liq=rv.liq*v;
+    const marg=rv.preco>0?rv.liq/rv.preco*100:0;
+    const cap=custo*v;
+    const roi=cap>0?liq/cap*100:0;
+    rows+=`<tr>
+      <td><span class="pcnt">${v}</span></td>
+      <td>${fmt(rec)}</td>
+      <td style="color:var(--ok);font-weight:700;">${fmt(liq)}</td>
+      <td>${pct(marg)}</td>
+      <td>${fmt(cap)}</td>
+      <td>${pct(roi)}</td>
+    </tr>`;
+  });
+  setEl('proj-body',rows);
+}
+
+// ============================================================
+// REPORT
+// ============================================================
+function renderReport(){
+  const wi=winnerIdx;
+  const tots=[0,1,2].map(i=>calcSupplier(i));
+  const sorted=[...tots].map((t,i)=>({t,i})).sort((a,b)=>a.t-b.t);
+  const custo=tots[wi];
+  const arm=getV(`sf${wi}-4`);
+  const rv=calcRevenues(custo,arm);
+  const eco=sorted[1].t-sorted[0].t;
+  const forn=getS(`sn${wi}`)||'Fornecedor '+(wi+1);
+  const tt=getV(`sf${wi}-6`)||0;
+  const cli=getS('i-cliente')||'—';
+  const proj=getS('i-projeto')||'—';
+  const orig=getS('i-orig')||'—';
+  const dest=getS('i-dest')||'—';
+
+  const aRec=rv.totalRec;
+  const aImp=aRec*rv.imp/100;
+  const aLiq=aRec-aImp;
+  const bRec=custo+aRec;
+  const bImp=bRec*(rv.imp+2)/100;
+  const bLiq=aRec-bImp;
+  const recCen=aLiq>=bLiq;
+
+  setEl('rep-data',new Date().toLocaleDateString('pt-BR'));
+  setEl('rep-cot',getS('i-cot')||'Sem nº cotação');
+  setEl('r-cli',cli);setEl('r-proj',proj);
+  setEl('r-modal',getS('i-modal')||'—');
+  setEl('r-rota',`${orig} → ${dest}`);
+  setEl('r-inco',getS('i-inco')||'—');
+  setEl('r-forn',forn);
+  setEl('r-custo',fmt(custo));
+  setEl('r-tt',tt+' dias');
+  setEl('r-eco',fmt(eco)+' ('+pct(eco/sorted[1].t*100)+')');
+  setEl('r-preco',fmt(rv.preco));
+  setEl('r-profit',fmt(rv.profit));
+  setEl('r-com',fmt(rv.com));
+  setEl('r-rebate2',fmt(rv.rebate));
+  setEl('r-rep',fmt(rv.rep)+' ('+rv.repPct+'% sobre armazenagem)');
+  setEl('r-mkup',pct(rv.markup));
+  setEl('r-bruto',fmt(rv.bruto));
+  setEl('r-imp',fmt(rv.impostos));
+  setEl('r-liq',fmt(rv.liq));
+  setEl('r-marg',pct(rv.margem));
+  setEl('r-roi',pct(rv.roi));
+  setEl('r-cen',recCen?'Cenário A — Agência (Comissão)':'Cenário B — Principal (NF Total)');
+  setEl('r-cen-just',recCen
+    ?'Menor risco financeiro, sem necessidade de capital de giro, tributação simplificada.'
+    :'Maior receita bruta, mais controle da operação, porém requer capital de giro.');
+
+  const risks=[];
+  if(rv.margem<10) risks.push('⚠️ Margem abaixo de 10% — avaliar viabilidade da operação.');
+  if(custo>50000) risks.push('⚠️ Custo elevado — exige atenção ao fluxo de caixa.');
+  if(getV(`sf${wi}-4`)===0) risks.push('⚠️ Armazenagem não informada — pode impactar o custo real.');
+  if(rv.rep===0&&rv.repPct>0) risks.push('⚠️ Repasse de armazenagem zerado — verificar dados do fornecedor.');
+  risks.push('📋 Variação cambial pode impactar o custo final do frete internacional.');
+  risks.push('📋 Free time limitado pode gerar custos adicionais de demurrage.');
+  setEl('r-risks',risks.map(r=>`<div style="margin-bottom:6px;">${r}</div>`).join(''));
+
+  const finalText=`Com base na análise completa da operação para o cliente <strong>${cli}</strong> (${proj}),
+o fornecedor recomendado é <strong>${forn}</strong>, que apresenta o menor custo total de <strong>${fmt(custo)}</strong>,
+com economia de <strong>${fmt(eco)}</strong> em relação ao segundo colocado.
+
+O preço de venda recomendado é <strong>${fmt(rv.preco)}</strong>, com lucro líquido estimado de <strong>${fmt(rv.liq)}</strong>,
+representando uma margem de <strong>${pct(rv.margem)}</strong> e ROI de <strong>${pct(rv.roi)}</strong>.
+
+O modelo de faturamento recomendado é o <strong>${recCen?'Cenário A (Agência)':'Cenário B (Principal)'}</strong>,
+considerando ${recCen?'menor exposição financeira e tributação simplificada':'maior receita e controle operacional'}.
+
+O repasse de armazenagem de <strong>${rv.repPct}%</strong> gerou uma receita adicional de <strong>${fmt(rv.rep)}</strong> para a WINNEX.
+
+<strong>Recomendação:</strong> Proposta <span style="background:#22C55E;color:#fff;padding:2px 8px;border-radius:4px;font-size:12px;">APROVADA</span> —
+os indicadores financeiros estão dentro dos parâmetros aceitáveis para a WINNEX Logistics.`;
+  setEl('r-final',finalText);
+}
+
+// ============================================================
+// TOGGLE TIPO
+// ============================================================
+function setTipo(field,tipo){
+  tipos[field]=tipo;
+  const lblMap={profit:'pl-lbl',com:'cl-lbl',rebate:'rl-lbl'};
+  const vBtn={profit:'pt-v',com:'ct-v',rebate:'rt-v'};
+  const uBtn={profit:'pt-u',com:'ct-u'};
+  const pBtn={profit:'pt-p',com:'ct-p',rebate:'rt-p'};
+  document.getElementById(vBtn[field])?.classList.toggle('on',tipo==='valor');
+  document.getElementById(uBtn[field])?.classList.toggle('on',tipo==='usd');
+  document.getElementById(pBtn[field])?.classList.toggle('on',tipo==='pct');
+  const lbl=document.getElementById(lblMap[field]);
+  if(lbl) lbl.textContent=tipo==='valor'?'Valor (R$)':tipo==='usd'?'Valor (USD — convertido automaticamente)':'Percentual (% sobre custo)';
+  calc();
+}
+
+// ============================================================
+// REPASSE SELECT
+// ============================================================
+document.getElementById('r-rep-pct').addEventListener('change',function(){
+  document.getElementById('rep-custom-wrap').style.display=this.value==='custom'?'block':'none';
+  calc();
+});
+
+// ============================================================
+// EXPORT
+// ============================================================
+function exportReport(){
+  const txt=document.getElementById('report-area').innerText;
+  const blob=new Blob([txt],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='WFIP-Parecer-'+new Date().toISOString().split('T')[0]+'.txt';
+  a.click();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+document.getElementById('i-data').value=new Date().toISOString().split('T')[0];
+calc();
+</script>
+</body>
+</html>
